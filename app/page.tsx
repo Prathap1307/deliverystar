@@ -1,13 +1,17 @@
-'use client';
+'use client'
 
-import { useMemo, useState } from 'react';
-import Hero from '@/components/Hero';
-import ProductCard from '@/components/ProductCard';
-import SectionTitle from '@/components/SectionTitle';
-import QuickViewModal from '@/components/QuickViewModal';
-import { products, type Product } from '@/data/products';
-import { favouriteItems } from '@/data/favourites';
+import Navbar from '../components/Navbar';
+import Hero from '../components/Hero';
+import CategoryCarousel from '../components/CategoryCarousel';
+import ProductList from '../components/ProductList';
+import { products } from '../lib/data';
 import { useCart } from '@/components/context/CartContext';
+import { useMemo, useState } from 'react';
+import { Product } from '@/data/products';
+import { favouriteItems } from '@/data/favourites';
+import SectionTitle from '@/components/SectionTitle';
+import ProductCard from '@/components/ProductCard';
+import QuickViewModal from '@/components/QuickViewModal';
 
 export default function HomePage() {
   const { addItem } = useCart();
