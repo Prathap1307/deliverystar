@@ -2,13 +2,14 @@
 
 import Image from 'next/image';
 import { useState } from 'react';
+import { useCart } from '@/components/context/CartContext';
 import { FiHeart, FiShoppingCart, FiUser, FiMenu, FiX, FiFilter } from 'react-icons/fi';
 
 // NAVBAR
 export default function Navbar() {
   const [cartOpen, setCartOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const cartCount = 2;
+  const { cartQuantity } = useCart();
 
   return (
     <header className="fixed top-0 w-full bg-white shadow-md z-50">
@@ -28,9 +29,9 @@ export default function Navbar() {
           />
           <button className="relative p-2 rounded-full hover:bg-gray-100" onClick={() => setCartOpen(!cartOpen)}>
             <FiShoppingCart size={24} />
-            {cartCount > 0 && (
+            {cartQuantity > 0 && (
               <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
-                {cartCount}
+                {cartQuantity}
               </span>
             )}
           </button>
@@ -54,7 +55,7 @@ export default function Navbar() {
           />
 
           <button className="flex items-center gap-3 p-2 rounded hover:bg-gray-100">
-            <FiShoppingCart size={22} /> Cart ({cartCount})
+            <FiShoppingCart size={22} /> Cart ({cartQuantity})
           </button>
           <button className="flex items-center gap-3 p-2 rounded hover:bg-gray-100"><FiHeart size={22} /> Wishlist</button>
           <button className="flex items-center gap-3 p-2 rounded hover:bg-gray-100"><FiUser size={22} /> Account</button>
