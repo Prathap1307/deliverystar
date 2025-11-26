@@ -1,7 +1,7 @@
-import Navbar from './components/Navbar';
-import Hero from './components/Hero';
-import CategoryCarousel from './components/CategoryCarousel';
-import ProductList from './components/ProductList';
+import Navbar from '../components/Navbar';
+import Hero from '../components/Hero';
+import CategoryCarousel from '../components/CategoryCarousel';
+import ProductList from '../components/ProductList';
 import { products } from '../lib/data';
 
 export default function HomePage() {

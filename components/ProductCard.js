@@ -1,7 +1,8 @@
+
 'use client'
 
-import { useCart } from '@/app/components/context/CartContext'; 
-// import { Product } from '@/lib/dynamo'; <--- You can remove this import in a JS file if it's just for types
+import Image from 'next/image';
+import { useCart } from '@/components/context/CartContext';
 
 export default function ProductCard({ product }) { // Removed ": Props" here
   // Use the global context
@@ -12,8 +13,14 @@ export default function ProductCard({ product }) { // Removed ": Props" here
 
   return (
     <div className="border rounded-lg shadow-lg overflow-hidden flex flex-col hover:scale-105 transition-transform bg-white">
-      {/* Use standard img or next/image */}
-      <img src={product.imageUrl} alt={product.name} className="h-48 w-full object-cover" />
+      <Image
+        src={product.imageUrl}
+        alt={product.name}
+        width={400}
+        height={200}
+        className="h-48 w-full object-cover"
+        priority
+      />
       
       <div className="p-4 flex flex-col flex-1">
         <h3 className="font-bold text-lg text-gray-800">{product.name}</h3>
