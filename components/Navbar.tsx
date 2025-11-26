@@ -1,99 +1,112 @@
-'use client'
+'use client';
 
+import Link from 'next/link';
 import Image from 'next/image';
 import { useState } from 'react';
-import { FiHeart, FiShoppingCart, FiUser, FiMenu, FiX, FiFilter } from 'react-icons/fi';
+import { FiHeart, FiMenu, FiSearch, FiShoppingBag, FiUser, FiX } from 'react-icons/fi';
+import { useCart } from '@/components/context/CartContext';
 
-// NAVBAR
 export default function Navbar() {
-  const [cartOpen, setCartOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const cartCount = 2;
+  const { itemCount } = useCart();
+
+  const links = [
+    { href: '/', label: 'Home' },
+    { href: '/favourites', label: 'Favourites' },
+    { href: '/cart', label: 'Cart' },
+    { href: '/account', label: 'Account' },
+  ];
 
   return (
-    <header className="fixed top-0 w-full bg-white shadow-md z-50">
-      <div className="max-w-7xl mx-auto px-4 flex justify-between items-center h-16">
-        {/* Brand */}
+    <header className="sticky top-0 z-40 bg-white/90 backdrop-blur border-b border-gray-100">
+      <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 md:px-6">
         <div className="flex items-center gap-3">
-          <Image src="/brand.png" width={45} height={45} alt="Brand Logo" />
-          <span className="font-bold text-xl text-gray-800">Delivery Star</span>
+          <Link href="/" className="flex items-center gap-3">
+            <div className="relative h-10 w-10">
+              <Image src="/brand.png" alt="Delivery Star" fill className="object-contain" />
+            </div>
+            <span className="text-xl font-bold text-gray-900">Delivery Star</span>
+          </Link>
+          <div className="hidden md:flex items-center gap-2 rounded-full border border-gray-200 px-4 py-2 shadow-inner">
+            <FiSearch className="text-gray-400" />
+            <input
+              placeholder="Search dishes, essentials..."
+              className="w-64 bg-transparent text-sm focus:outline-none"
+              aria-label="Search products"
+            />
+          </div>
         </div>
 
-        {/* Desktop Search */}
-        <div className="hidden md:flex items-center gap-4">
-          <input
-            type="text"
-            placeholder="Search products..."
-            className="border rounded-full px-4 py-2 w-64 focus:ring-2 focus:ring-purple-500"
-          />
-          <button className="relative p-2 rounded-full hover:bg-gray-100" onClick={() => setCartOpen(!cartOpen)}>
-            <FiShoppingCart size={24} />
-            {cartCount > 0 && (
-              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
-                {cartCount}
+        <nav className="hidden items-center gap-6 md:flex">
+          {links.map((link) => (
+            <Link key={link.href} href={link.href} className="text-sm font-semibold text-gray-700 hover:text-purple-600">
+              {link.label}
+            </Link>
+          ))}
+          <Link
+            href="/cart"
+            className="relative flex items-center gap-2 rounded-full bg-purple-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-purple-700"
+          >
+            <FiShoppingBag />
+            <span>Cart</span>
+            {itemCount > 0 && (
+              <span className="absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full bg-white text-xs font-bold text-purple-700 shadow">
+                {itemCount}
               </span>
             )}
-          </button>
-          <button className="p-2 rounded-full hover:bg-gray-100"><FiHeart size={24} /></button>
-          <button className="p-2 rounded-full hover:bg-gray-100"><FiUser size={24} /></button>
-        </div>
+          </Link>
+          <Link
+            href="/favourites"
+            className="rounded-full border border-gray-200 p-2 text-gray-700 hover:border-purple-500 hover:text-purple-600"
+            aria-label="Favourites"
+          >
+            <FiHeart />
+          </Link>
+          <Link
+            href="/account"
+            className="rounded-full border border-gray-200 p-2 text-gray-700 hover:border-purple-500 hover:text-purple-600"
+            aria-label="Account"
+          >
+            <FiUser />
+          </Link>
+        </nav>
 
-        {/* Mobile Menu Button */}
-        <button className="md:hidden p-2 rounded-full hover:bg-gray-100" onClick={() => setMobileOpen(!mobileOpen)}>
-          {mobileOpen ? <FiX size={26} /> : <FiMenu size={26} />}
+        <button
+          className="flex h-11 w-11 items-center justify-center rounded-full border border-gray-200 text-gray-700 hover:border-purple-500 hover:text-purple-600 md:hidden"
+          onClick={() => setMobileOpen((prev) => !prev)}
+          aria-label="Toggle menu"
+        >
+          {mobileOpen ? <FiX size={22} /> : <FiMenu size={22} />}
         </button>
       </div>
 
-      {/* Mobile Drawer */}
       {mobileOpen && (
-        <div className="md:hidden bg-white shadow-md px-4 pb-4 flex flex-col gap-4 animate-slideDown">
-          <input
-            type="text"
-            placeholder="Search products..."
-            className="border rounded-full px-4 py-2 w-full focus:ring-2 focus:ring-purple-500"
-          />
-
-          <button className="flex items-center gap-3 p-2 rounded hover:bg-gray-100">
-            <FiShoppingCart size={22} /> Cart ({cartCount})
-          </button>
-          <button className="flex items-center gap-3 p-2 rounded hover:bg-gray-100"><FiHeart size={22} /> Wishlist</button>
-          <button className="flex items-center gap-3 p-2 rounded hover:bg-gray-100"><FiUser size={22} /> Account</button>
+        <div className="border-t border-gray-100 bg-white md:hidden">
+          <div className="flex items-center gap-2 px-4 py-3">
+            <FiSearch className="text-gray-400" />
+            <input
+              placeholder="Search dishes, essentials..."
+              className="w-full bg-transparent text-sm focus:outline-none"
+              aria-label="Search products"
+            />
+          </div>
+          <div className="grid gap-2 px-4 pb-4">
+            {links.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="flex items-center justify-between rounded-2xl border border-gray-100 px-4 py-3 text-sm font-semibold text-gray-800 shadow-sm"
+                onClick={() => setMobileOpen(false)}
+              >
+                {link.label}
+                {link.href === '/cart' && itemCount > 0 && (
+                  <span className="rounded-full bg-purple-600 px-2 py-0.5 text-xs font-bold text-white">{itemCount}</span>
+                )}
+              </Link>
+            ))}
+          </div>
         </div>
       )}
     </header>
-  );
-}
-
-// FILTER DROPDOWN (Mobile)
-export function MobileFilter({ selected, setSelected, categories }) {
-  const [open, setOpen] = useState(false);
-
-  return (
-    <div className="md:hidden px-4 mt-4">
-      <button
-        onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between bg-purple-600 text-white px-4 py-2 rounded-full shadow-md"
-      >
-        <span>Filter: {selected}</span>
-        <FiFilter size={20} />
-      </button>
-
-      {open && (
-        <div className="bg-white mt-2 rounded-lg shadow-md p-3 space-y-2">
-          {categories.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => {
-                setSelected(cat);
-                setOpen(false);
-              }}
-              className={`w-full text-left p-2 rounded ${selected === cat ? 'bg-purple-600 text-white' : 'bg-gray-100'}`}
-            >
-              {cat}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
   );
 }
