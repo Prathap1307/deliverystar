@@ -1,23 +1,33 @@
-'use client'
+'use client';
 
+import Link from 'next/link';
 import Image from 'next/image';
 import { useState } from 'react';
 import { useCart } from '@/components/context/CartContext';
 import { FiHeart, FiShoppingCart, FiUser, FiMenu, FiX, FiFilter } from 'react-icons/fi';
 
-// NAVBAR
 export default function Navbar() {
-  const [cartOpen, setCartOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const { cartQuantity } = useCart();
 
   return (
-    <header className="fixed top-0 w-full bg-white shadow-md z-50">
-      <div className="max-w-7xl mx-auto px-4 flex justify-between items-center h-16">
-        {/* Brand */}
+    <header className="sticky top-0 z-40 bg-white/90 backdrop-blur border-b border-gray-100">
+      <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 md:px-6">
         <div className="flex items-center gap-3">
-          <Image src="/brand.png" width={45} height={45} alt="Brand Logo" />
-          <span className="font-bold text-xl text-gray-800">Delivery Star</span>
+          <Link href="/" className="flex items-center gap-3">
+            <div className="relative h-10 w-10">
+              <Image src="/brand.png" alt="Delivery Star" fill className="object-contain" />
+            </div>
+            <span className="text-xl font-bold text-gray-900">Delivery Star</span>
+          </Link>
+          <div className="hidden md:flex items-center gap-2 rounded-full border border-gray-200 px-4 py-2 shadow-inner">
+            <FiSearch className="text-gray-400" />
+            <input
+              placeholder="Search dishes, essentials..."
+              className="w-64 bg-transparent text-sm focus:outline-none"
+              aria-label="Search products"
+            />
+          </div>
         </div>
 
         {/* Desktop Search */}
@@ -34,18 +44,32 @@ export default function Navbar() {
                 {cartQuantity}
               </span>
             )}
-          </button>
-          <button className="p-2 rounded-full hover:bg-gray-100"><FiHeart size={24} /></button>
-          <button className="p-2 rounded-full hover:bg-gray-100"><FiUser size={24} /></button>
-        </div>
+          </Link>
+          <Link
+            href="/favourites"
+            className="rounded-full border border-gray-200 p-2 text-gray-700 hover:border-purple-500 hover:text-purple-600"
+            aria-label="Favourites"
+          >
+            <FiHeart />
+          </Link>
+          <Link
+            href="/account"
+            className="rounded-full border border-gray-200 p-2 text-gray-700 hover:border-purple-500 hover:text-purple-600"
+            aria-label="Account"
+          >
+            <FiUser />
+          </Link>
+        </nav>
 
-        {/* Mobile Menu Button */}
-        <button className="md:hidden p-2 rounded-full hover:bg-gray-100" onClick={() => setMobileOpen(!mobileOpen)}>
-          {mobileOpen ? <FiX size={26} /> : <FiMenu size={26} />}
+        <button
+          className="flex h-11 w-11 items-center justify-center rounded-full border border-gray-200 text-gray-700 hover:border-purple-500 hover:text-purple-600 md:hidden"
+          onClick={() => setMobileOpen((prev) => !prev)}
+          aria-label="Toggle menu"
+        >
+          {mobileOpen ? <FiX size={22} /> : <FiMenu size={22} />}
         </button>
       </div>
 
-      {/* Mobile Drawer */}
       {mobileOpen && (
         <div className="md:hidden bg-white shadow-md px-4 pb-4 flex flex-col gap-4 animate-slideDown">
           <input
@@ -62,39 +86,5 @@ export default function Navbar() {
         </div>
       )}
     </header>
-  );
-}
-
-// FILTER DROPDOWN (Mobile)
-export function MobileFilter({ selected, setSelected, categories }) {
-  const [open, setOpen] = useState(false);
-
-  return (
-    <div className="md:hidden px-4 mt-4">
-      <button
-        onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between bg-purple-600 text-white px-4 py-2 rounded-full shadow-md"
-      >
-        <span>Filter: {selected}</span>
-        <FiFilter size={20} />
-      </button>
-
-      {open && (
-        <div className="bg-white mt-2 rounded-lg shadow-md p-3 space-y-2">
-          {categories.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => {
-                setSelected(cat);
-                setOpen(false);
-              }}
-              className={`w-full text-left p-2 rounded ${selected === cat ? 'bg-purple-600 text-white' : 'bg-gray-100'}`}
-            >
-              {cat}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
   );
 }
