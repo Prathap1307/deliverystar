@@ -1,12 +1,20 @@
 "use client";
 
-import { useState } from "react";
+import { usePathname } from "next/navigation";
+import { useMemo, useState } from "react";
 
 import AdminSidebar from "./AdminSidebar";
 import AdminTopbar from "./AdminTopbar";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const isLoginPage = useMemo(() => pathname?.startsWith("/admin/login"), [pathname]);
+
+  if (isLoginPage) {
+    return <div className="min-h-screen overflow-x-hidden bg-slate-50">{children}</div>;
+  }
 
   return (
     <div className="min-h-screen overflow-x-hidden bg-slate-50 text-slate-900">
@@ -14,7 +22,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <AdminSidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
         <div className="flex min-h-screen flex-1 flex-col md:pl-72">
           <AdminTopbar onMenuClick={() => setSidebarOpen(true)} />
-          <main className="mx-auto flex w-full max-w-screen-2xl flex-1 px-4 pb-10 pt-24 md:px-8 md:pt-10">
+          <main className="mx-auto flex w-full max-w-screen-2xl flex-1 px-4 pb-10 pt-20 md:px-8 md:pt-14">
             <div className="w-full space-y-6">{children}</div>
           </main>
         </div>

@@ -5,12 +5,12 @@ import { useMemo, useState } from "react";
 import AdminCard from "./AdminCard";
 import AdminPageTitle from "./AdminPageTitle";
 import AdminShell from "./AdminShell";
-import EditOrderModal from "./EditOrderModal";
+import AdminEditModal from "./AdminEditModal";
+import AdminStatusModal from "./AdminStatusModal";
+import AdminViewModal from "./AdminViewModal";
 import MobileOrderCard from "./MobileOrderCard";
 import OrderTable from "./OrderTable";
-import StatusModal from "./StatusModal";
-import ViewOrderModal from "./ViewOrderModal";
-import { AdminOrder, todaysOrders } from "@/data/adminOrders";
+import { AdminOrder, todaysOrders } from "@/data/admin/adminOrders";
 
 export default function DashboardClient() {
   const [viewOrder, setViewOrder] = useState<AdminOrder | null>(null);
@@ -36,7 +36,7 @@ export default function DashboardClient() {
     <AdminShell>
       <AdminPageTitle
         title="Today’s Orders"
-        description="Fast access to pickup tags, surcharges, and live statuses."
+        description="Mobile-first run sheet showing pickups, surcharges, and quick actions."
         action={<button className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow-md">Print Summary</button>}
       />
 
@@ -55,7 +55,7 @@ export default function DashboardClient() {
         </AdminCard>
       </div>
 
-      <AdminCard title="Today’s tickets" description="Run sheets for the operations team">
+      <AdminCard title="Today’s tickets" description="Desktop table + mobile cards with zero horizontal scroll">
         <OrderTable orders={todaysOrders} onView={setViewOrder} onEdit={setEditOrder} onStatus={setStatusOrder} />
         <div className="mt-4 grid gap-3">
           {todaysOrders.map((order) => (
@@ -64,9 +64,19 @@ export default function DashboardClient() {
         </div>
       </AdminCard>
 
-      <ViewOrderModal order={viewOrder} open={Boolean(viewOrder)} onClose={() => setViewOrder(null)} />
-      <EditOrderModal key={editOrder?.id ?? "edit-modal"} order={editOrder} open={Boolean(editOrder)} onClose={() => setEditOrder(null)} />
-      <StatusModal order={statusOrder} open={Boolean(statusOrder)} onClose={() => setStatusOrder(null)} />
+      <AdminViewModal order={viewOrder} open={Boolean(viewOrder)} onClose={() => setViewOrder(null)} />
+      <AdminEditModal
+        key={editOrder?.id ?? "edit-modal"}
+        order={editOrder}
+        open={Boolean(editOrder)}
+        onClose={() => setEditOrder(null)}
+      />
+      <AdminStatusModal
+        key={statusOrder?.id ?? "status-modal"}
+        order={statusOrder}
+        open={Boolean(statusOrder)}
+        onClose={() => setStatusOrder(null)}
+      />
     </AdminShell>
   );
 }
