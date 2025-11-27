@@ -16,17 +16,17 @@ export default function QuickViewModal({ open, product, onClose, onAddToCart, on
   if (!open || !product) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/30 backdrop-blur-sm px-4 md:items-center">
-      <div className="relative h-[80vh] w-full max-w-3xl overflow-hidden rounded-t-3xl bg-white shadow-2xl md:h-auto md:rounded-3xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm px-4">
+      <div className="relative w-full max-w-3xl overflow-hidden rounded-3xl bg-white shadow-2xl">
         <button
           onClick={onClose}
-          className="absolute right-4 top-4 z-10 rounded-full bg-white/90 p-2 shadow hover:bg-white"
+          className="absolute right-4 top-4 rounded-full bg-white/80 p-2 shadow hover:bg-white"
           aria-label="Close quick view"
         >
           <FiX size={22} />
         </button>
-        <div className="grid h-full grid-cols-1 md:grid-cols-2">
-          <div className="relative h-64 md:h-full">
+        <div className="grid grid-cols-1 md:grid-cols-2">
+          <div className="relative h-80 md:h-full">
             <Image
               src={product.image}
               alt={product.name}
@@ -35,23 +35,21 @@ export default function QuickViewModal({ open, product, onClose, onAddToCart, on
               sizes="(max-width: 768px) 100vw, 50vw"
             />
           </div>
-          <div className="flex flex-col justify-between p-6 space-y-4 overflow-y-auto md:p-8">
-            <div className="space-y-3">
-              <p className="text-sm font-semibold text-purple-600">Quick view</p>
-              <h2 className="text-2xl font-bold text-gray-900">{product.name}</h2>
-              <p className="text-gray-600 leading-relaxed">{product.description}</p>
-              <p className="text-3xl font-bold text-gray-900">${product.price.toFixed(2)}</p>
-            </div>
+          <div className="p-8 text-left space-y-4">
+            <p className="text-sm font-semibold text-purple-600">Quick view</p>
+            <h2 className="text-2xl font-bold text-gray-900">{product.name}</h2>
+            <p className="text-gray-600 leading-relaxed">{product.description}</p>
+            <p className="text-3xl font-bold text-gray-900">${product.price.toFixed(2)}</p>
             <div className="flex gap-3 pt-2">
               <button
                 onClick={() => onAddToCart(product)}
-                className="flex-1 rounded-full bg-purple-600 px-5 py-3 text-white font-semibold shadow-md transition hover:bg-purple-700"
+                className="flex-1 rounded-full bg-purple-600 px-5 py-3 text-white font-semibold shadow-md hover:bg-purple-700 transition"
               >
                 Add to Cart
               </button>
               <button
                 onClick={() => onFavourite(product)}
-                className="rounded-full border border-gray-200 p-3 text-gray-700 transition hover:border-purple-500 hover:text-purple-600"
+                className="rounded-full border border-gray-200 p-3 text-gray-700 hover:border-purple-500 hover:text-purple-600 transition"
                 aria-label="Add to favourites"
               >
                 <FiHeart size={20} />
