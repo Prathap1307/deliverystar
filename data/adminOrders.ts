@@ -1,42 +1,62 @@
+export interface AdminOrderItem {
+  name: string;
+  qty: number;
+  price: number;
+}
+
+export type AdminOrderStatus = "Preparing" | "Prepared" | "Rider Reached" | "Picked Up" | "On The Way" | "Delivered";
+
 export interface AdminOrder {
   id: string;
   customerName: string;
-  phone: string;
-  email: string;
-  items: string;
-  price: number;
-  deliveryPrice: number;
-  surcharge: number;
-  location: string;
+  customerEmail: string;
+  customerPhone: string;
+  restaurantName: string;
   instorePickup: boolean;
-  status: "Preparing" | "Prepared" | "On The Way" | "Delivered" | "Rider Arrived" | "Rider Picked";
+  pickupLocation: string;
+  customerLocation: string;
+  items: AdminOrderItem[];
+  deliveryCharge: number;
+  tax: number;
+  surcharge: number;
+  status: AdminOrderStatus;
 }
 
 export const todaysOrders: AdminOrder[] = [
   {
     id: "ORD123",
     customerName: "John Doe",
-    phone: "1234567890",
-    email: "john@example.com",
-    items: "Vodka x1, Chips x2",
-    price: 45.99,
-    deliveryPrice: 4.99,
-    surcharge: 1.5,
-    location: "123 Luton Road",
+    customerEmail: "john@example.com",
+    customerPhone: "1234567",
+    restaurantName: "Spice Hub",
     instorePickup: true,
+    pickupLocation: "Tesco Luton",
+    customerLocation: "12 King Street, Luton",
+    items: [
+      { name: "Biryani", qty: 2, price: 8.99 },
+      { name: "Coke", qty: 1, price: 1.99 },
+    ],
+    deliveryCharge: 3.99,
+    tax: 1.2,
+    surcharge: 0.5,
     status: "Preparing",
   },
   {
     id: "ORD124",
-    customerName: "Priya K.",
-    phone: "9876543210",
-    email: "priya@example.com",
-    items: "Coke x3, Brownie x2",
-    price: 24.5,
-    deliveryPrice: 3.99,
-    surcharge: 0,
-    location: "45 Baker Street",
+    customerName: "Priya Kumar",
+    customerEmail: "priya@example.com",
+    customerPhone: "9876543",
+    restaurantName: "Midnight Eats",
     instorePickup: false,
+    pickupLocation: "",
+    customerLocation: "45 Baker Street, London",
+    items: [
+      { name: "Paneer Wrap", qty: 1, price: 6.5 },
+      { name: "Chips", qty: 2, price: 2.25 },
+    ],
+    deliveryCharge: 4.99,
+    tax: 1.4,
+    surcharge: 0,
     status: "On The Way",
   },
 ];
@@ -46,27 +66,37 @@ export const allOrders: AdminOrder[] = [
   {
     id: "ORD125",
     customerName: "Alex Morgan",
-    phone: "4455667788",
-    email: "alex@example.com",
-    items: "Tequila x1, Lime x6",
-    price: 52.0,
-    deliveryPrice: 6.5,
-    surcharge: 2.0,
-    location: "88 Riverside Ave",
+    customerEmail: "alex@example.com",
+    customerPhone: "4455667",
+    restaurantName: "Grill Street",
     instorePickup: false,
+    pickupLocation: "",
+    customerLocation: "88 Riverside Ave",
+    items: [
+      { name: "Wings", qty: 12, price: 0.99 },
+      { name: "Lime", qty: 6, price: 0.35 },
+    ],
+    deliveryCharge: 6.5,
+    tax: 2.1,
+    surcharge: 2.0,
     status: "Delivered",
   },
   {
     id: "ORD126",
-    customerName: "Fatima S.",
-    phone: "1122334455",
-    email: "fatima@example.com",
-    items: "Red Wine x2",
-    price: 38.0,
-    deliveryPrice: 5.5,
-    surcharge: 1.0,
-    location: "22 High Street",
+    customerName: "Fatima Shaik",
+    customerEmail: "fatima@example.com",
+    customerPhone: "1122334",
+    restaurantName: "Royal Bites",
     instorePickup: true,
+    pickupLocation: "Tesco Express",
+    customerLocation: "22 High Street",
+    items: [
+      { name: "Red Wine", qty: 2, price: 19.0 },
+      { name: "Cheese Board", qty: 1, price: 9.5 },
+    ],
+    deliveryCharge: 5.5,
+    tax: 1.7,
+    surcharge: 1.0,
     status: "Prepared",
   },
 ];

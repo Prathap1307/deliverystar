@@ -14,13 +14,13 @@ import { allOrders } from "@/data/adminOrders";
 
 const columns = [
   { key: "customerName", label: "Customer Name" },
-  { key: "phone", label: "Phone" },
-  { key: "email", label: "Email" },
+  { key: "customerPhone", label: "Phone" },
+  { key: "customerEmail", label: "Email" },
   { key: "items", label: "Ordered Items", className: "min-w-[220px]" },
-  { key: "price", label: "Price" },
-  { key: "deliveryPrice", label: "Delivery" },
+  { key: "deliveryCharge", label: "Delivery" },
+  { key: "tax", label: "Tax" },
   { key: "surcharge", label: "Surcharge" },
-  { key: "location", label: "Delivery Location", className: "min-w-[200px]" },
+  { key: "customerLocation", label: "Delivery Location", className: "min-w-[200px]" },
   { key: "instorePickup", label: "In-store Pickup" },
   { key: "status", label: "Status" },
   { key: "actions", label: "Actions" },
@@ -28,7 +28,7 @@ const columns = [
 
 export default function AdminOrdersClient() {
   const [editingOrderId, setEditingOrderId] = useState<string | null>(null);
-  const [formState, setFormState] = useState({ items: "", price: "", deliveryPrice: "", surcharge: "" });
+  const [formState, setFormState] = useState({ items: "", deliveryCharge: "", tax: "", surcharge: "" });
 
   const selectedOrder = useMemo(() => allOrders.find((o) => o.id === editingOrderId), [editingOrderId]);
 
@@ -45,8 +45,9 @@ export default function AdminOrdersClient() {
           columns={columns}
           data={allOrders}
           renderCell={(order, key) => {
-            if (key === "price") return `£${order.price.toFixed(2)}`;
-            if (key === "deliveryPrice") return `£${order.deliveryPrice.toFixed(2)}`;
+            if (key === "items") return order.items.map((item) => `${item.name} x${item.qty}`).join(", ");
+            if (key === "deliveryCharge") return `£${order.deliveryCharge.toFixed(2)}`;
+            if (key === "tax") return `£${order.tax.toFixed(2)}`;
             if (key === "surcharge") return order.surcharge ? `£${order.surcharge.toFixed(2)}` : "—";
             if (key === "instorePickup")
               return order.instorePickup ? (
@@ -63,9 +64,9 @@ export default function AdminOrdersClient() {
                     onClick={() => {
                       setEditingOrderId(order.id);
                       setFormState({
-                        items: order.items,
-                        price: order.price.toString(),
-                        deliveryPrice: order.deliveryPrice.toString(),
+                        items: order.items.map((item) => `${item.name} x${item.qty}`).join(", "),
+                        deliveryCharge: order.deliveryCharge.toString(),
+                        tax: order.tax.toString(),
                         surcharge: order.surcharge.toString(),
                       });
                     }}
@@ -105,21 +106,21 @@ export default function AdminOrdersClient() {
             label="Items"
             value={formState.items}
             onChange={(e) => setFormState((prev) => ({ ...prev, items: e.target.value }))}
-            placeholder="Vodka x1, Chips x2"
-          />
-          <AdminFormField
-            label="Total Price"
-            type="number"
-            value={formState.price}
-            onChange={(e) => setFormState((prev) => ({ ...prev, price: e.target.value }))}
-            placeholder="45.99"
+            placeholder="Biryani x2, Coke x1"
           />
           <AdminFormField
             label="Delivery Charge"
             type="number"
-            value={formState.deliveryPrice}
-            onChange={(e) => setFormState((prev) => ({ ...prev, deliveryPrice: e.target.value }))}
+            value={formState.deliveryCharge}
+            onChange={(e) => setFormState((prev) => ({ ...prev, deliveryCharge: e.target.value }))}
             placeholder="4.99"
+          />
+          <AdminFormField
+            label="Tax"
+            type="number"
+            value={formState.tax}
+            onChange={(e) => setFormState((prev) => ({ ...prev, tax: e.target.value }))}
+            placeholder="1.20"
           />
           <AdminFormField
             label="Surcharge"
