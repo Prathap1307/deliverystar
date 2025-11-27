@@ -43,8 +43,11 @@ export default function HomePage() {
 
   return (
     <div className="space-y-10">
-      <Hero />
+      <div className="bg-gray-50 min-h-screen">
 
+        <Hero />
+        <CategoryCarousel />
+      </div>
       <section className="space-y-6">
         <SectionTitle
           eyebrow="Tonight's picks"
