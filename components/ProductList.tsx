@@ -1,4 +1,4 @@
-import { Product } from '@/lib/dynamo';
+import { Product } from '@/lib/data';
 import ProductCard from './ProductCard';
 
 interface Props {

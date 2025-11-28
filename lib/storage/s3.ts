@@ -1,26 +1,19 @@
-import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
-
-export const s3 = new S3Client({
-  region: process.env.AWS_REGION,
-  credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
-  },
-});
+import { PutObjectCommand } from "@aws-sdk/client-s3";
+import { s3Client } from "@/lib/aws/client";
 
 export async function uploadImage(
   buffer: Buffer,
   fileName: string,
   mimeType: string
 ): Promise<string> {
-  await s3.send(
+  await s3Client.send(
     new PutObjectCommand({
-      Bucket: process.env.AWS_BUCKET_NAME!,
+      Bucket: process.env.AWS_S3_BUCKET_NAME!,
       Key: fileName,
       Body: buffer,
       ContentType: mimeType,
     })
   );
 
-  return `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${fileName}`;
+  return `https://${process.env.AWS_S3_BUCKET_NAME}.s3.amazonaws.com/${fileName}`;
 }
