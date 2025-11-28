@@ -10,7 +10,11 @@ import AdminModal from "./AdminModal";
 import AdminPageTitle from "./AdminPageTitle";
 import AdminShell from "./AdminShell";
 import AdminTable from "./AdminTable";
-import { adminItems } from "@/data/adminItems";
+import type { AdminItem } from "@/lib/admin/catalog";
+
+interface Props {
+  initialItems: AdminItem[];
+}
 
 const columns = [
   { key: "name", label: "Title" },
@@ -22,9 +26,10 @@ const columns = [
   { key: "actions", label: "Actions" },
 ];
 
-export default function AdminItemsClient() {
+export default function AdminItemsClient({ initialItems }: Props) {
   const [modalOpen, setModalOpen] = useState(false);
-  const [editingItemId, setEditingItemId] = useState<number | null>(null);
+  const [editingItemId, setEditingItemId] = useState<string | null>(null);
+  const [items, setItems] = useState<AdminItem[]>(initialItems);
   const [formState, setFormState] = useState({
     name: "",
     price: "",
@@ -34,6 +39,45 @@ export default function AdminItemsClient() {
     active: true,
     schedule: "",
   });
+
+  const handleSave = async () => {
+    const id = editingItemId ?? crypto.randomUUID();
+    const nextItem: AdminItem = {
+      id,
+      name: formState.name,
+      price: Number(formState.price || 0),
+      category: formState.category,
+      diet: formState.diet as AdminItem["diet"],
+      ageRestricted: formState.ageRestricted,
+      active: formState.active,
+    };
+
+    await fetch("/api/admin/items", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(nextItem),
+    });
+
+    setItems((prev) => {
+      const existing = prev.findIndex((item) => item.id === nextItem.id);
+      if (existing >= 0) {
+        const copy = [...prev];
+        copy[existing] = nextItem;
+        return copy;
+      }
+      return [...prev, nextItem];
+    });
+    setModalOpen(false);
+  };
+
+  const handleDelete = async (id: string) => {
+    await fetch("/api/admin/items", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id }),
+    });
+    setItems((prev) => prev.filter((item) => item.id !== id));
+  };
 
   return (
     <AdminShell>
@@ -57,7 +101,7 @@ export default function AdminItemsClient() {
       <AdminCard title="Catalogue" description="Manage veg/non-veg/vegan flags, age restriction, and active toggles">
         <AdminTable
           columns={columns}
-          data={adminItems}
+          data={items}
           renderCell={(item, key) => {
             if (key === "price") return `£${item.price.toFixed(2)}`;
             if (key === "ageRestricted") return item.ageRestricted ? <AdminBadge label="18+" tone="danger" /> : "—";
@@ -68,10 +112,10 @@ export default function AdminItemsClient() {
                   <button
                     className="rounded-lg bg-blue-50 px-3 py-1 text-blue-700 hover:bg-blue-100"
                     onClick={() => {
-                      setEditingItemId(item.id);
+              setEditingItemId(item.id);
                       setFormState({
                         name: item.name,
-                        price: item.price.toString(),
+                        price: item.price?.toString?.() || "",
                         category: item.category,
                         diet: item.diet ?? "Veg",
                         ageRestricted: item.ageRestricted,
@@ -83,8 +127,30 @@ export default function AdminItemsClient() {
                   >
                     Edit
                   </button>
-                  <button className="rounded-lg bg-rose-50 px-3 py-1 text-rose-700 hover:bg-rose-100">Delete</button>
-                  <button className="rounded-lg bg-slate-900 px-3 py-1 text-white hover:bg-slate-800">Save</button>
+                  <button
+                    className="rounded-lg bg-rose-50 px-3 py-1 text-rose-700 hover:bg-rose-100"
+                    onClick={() => handleDelete(item.id)}
+                  >
+                    Delete
+                  </button>
+                  <button
+                    className="rounded-lg bg-slate-900 px-3 py-1 text-white hover:bg-slate-800"
+                    onClick={() => {
+                      setEditingItemId(item.id);
+                      setFormState({
+                        name: item.name,
+                        price: item.price?.toString?.() || "",
+                        category: item.category,
+                        diet: item.diet ?? "Veg",
+                        ageRestricted: item.ageRestricted,
+                        active: item.active,
+                        schedule: "",
+                      });
+                      setModalOpen(true);
+                    }}
+                  >
+                    Save
+                  </button>
                 </div>
               );
             const fallback = item[key as keyof typeof item];
@@ -102,7 +168,12 @@ export default function AdminItemsClient() {
             <button className="rounded-xl bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-200" onClick={() => setModalOpen(false)}>
               Cancel
             </button>
-            <button className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700">Save item</button>
+            <button
+              className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700"
+              onClick={handleSave}
+            >
+              Save item
+            </button>
           </>
         }
       >

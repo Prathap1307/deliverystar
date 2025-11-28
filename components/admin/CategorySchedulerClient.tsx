@@ -7,13 +7,26 @@ import AdminCard from "./AdminCard";
 import AdminPageTitle from "./AdminPageTitle";
 import AdminShell from "./AdminShell";
 import AdminTable from "./AdminTable";
-import { adminCategories } from "@/data/adminCategories";
+import type { AdminCategory, SchedulerSelection } from "@/lib/admin/catalog";
+
+interface Props {
+  initialCategories: AdminCategory[];
+  initialSelection: SchedulerSelection;
+}
 
 const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 const slots = ["08:00–12:00", "16:00–22:00"];
 
-export default function CategorySchedulerClient() {
-  const [selectedCategories, setSelectedCategories] = useState<number[]>([1, 2]);
+export default function CategorySchedulerClient({ initialCategories, initialSelection }: Props) {
+  const [selectedCategories, setSelectedCategories] = useState<string[]>(initialSelection.ids);
+
+  const persistSelection = async () => {
+    await fetch("/api/admin/settings/category-schedule", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ids: selectedCategories }),
+    });
+  };
 
   const columns = [
     { key: "name", label: "Category" },
@@ -23,17 +36,24 @@ export default function CategorySchedulerClient() {
 
   return (
     <AdminShell>
-      <AdminPageTitle
-        title="Category Scheduler"
-        description="Choose categories and apply weekly opening windows."
-        action={<button className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow-md">Save schedule</button>}
-      />
+        <AdminPageTitle
+          title="Category Scheduler"
+          description="Choose categories and apply weekly opening windows."
+          action={
+            <button
+              className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow-md"
+              onClick={persistSelection}
+            >
+              Save schedule
+            </button>
+          }
+        />
 
       <div className="grid gap-6 lg:grid-cols-2">
         <AdminCard title="Choose categories" description="Pick which categories to schedule">
           <AdminTable
             columns={columns}
-            data={adminCategories}
+            data={initialCategories}
             renderCell={(category, key) => {
               if (key === "active") return category.active ? <AdminBadge label="Active" tone="success" /> : <AdminBadge label="Inactive" tone="warning" />;
               if (key === "actions")
@@ -44,7 +64,9 @@ export default function CategorySchedulerClient() {
                     checked={selectedCategories.includes(category.id)}
                     onChange={(e) => {
                       const checked = e.target.checked;
-                      setSelectedCategories((prev) => (checked ? [...prev, category.id] : prev.filter((id) => id !== category.id)));
+                      setSelectedCategories((prev) =>
+                        checked ? [...prev, category.id] : prev.filter((id) => id !== category.id),
+                      );
                     }}
                   />
                 );
