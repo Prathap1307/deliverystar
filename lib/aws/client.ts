@@ -1,24 +1,27 @@
-import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+import { DynamoDBClient, type DynamoDBClientConfig } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
-import { S3Client } from "@aws-sdk/client-s3";
+import { S3Client, type S3ClientConfig } from "@aws-sdk/client-s3";
 
 const region = process.env.AWS_REGION;
-const credentials = {
-  accessKeyId: process.env.AWS_ACCESS_KEY_ID || "",
-  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || "",
-};
 
-export const dynamoClient = new DynamoDBClient({
-  region,
-  credentials,
-});
+function buildAwsConfig<T extends DynamoDBClientConfig | S3ClientConfig>(): T {
+  const config: T = { region } as T;
+
+  if (process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY) {
+    config.credentials = {
+      accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+    };
+  }
+
+  return config;
+}
+
+export const dynamoClient = new DynamoDBClient(buildAwsConfig());
 
 export const docClient = DynamoDBDocumentClient.from(dynamoClient);
 
-export const s3Client = new S3Client({
-  region,
-  credentials,
-});
+export const s3Client = new S3Client(buildAwsConfig());
 
 export const tables = {
   orders: process.env.AWS_DYNAMODB_TABLE_ORDERS || "",

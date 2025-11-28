@@ -1,12 +1,5 @@
-import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
+import { docClient } from "@/lib/aws/client";
 
-export const dynamo = DynamoDBDocumentClient.from(
-  new DynamoDBClient({
-    region: process.env.AWS_REGION,
-    credentials: {
-      accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
-      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
-    },
-  })
-);
+// Alias the shared AWS document client so existing database helpers can reuse
+// the same configuration.
+export const dynamo = docClient;

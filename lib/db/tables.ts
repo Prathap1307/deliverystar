@@ -1,16 +1,17 @@
-function getEnv(key: string): string {
-  const value = process.env[key];
+import { tables } from "@/lib/aws/client";
+
+function requireTable(key: keyof typeof tables, value: string) {
   if (!value) {
-    throw new Error(`${key} is not configured`);
+    throw new Error(`AWS table name for ${key} is not configured`);
   }
   return value;
 }
 
 export const TABLES = {
-  ORDERS: getEnv("DYNAMO_ORDERS_TABLE"),
-  ITEMS: getEnv("DYNAMO_ITEMS_TABLE"),
-  CATEGORIES: getEnv("DYNAMO_CATEGORIES_TABLE"),
-  DELIVERY_CHARGES: getEnv("DYNAMO_DELIVERY_CHARGES_TABLE"),
-  RADIUS: getEnv("DYNAMO_RADIUS_TABLE"),
-  SURCHARGE: getEnv("DYNAMO_SURCHARGE_TABLE"),
+  ORDERS: requireTable("orders", tables.orders),
+  ITEMS: requireTable("items", tables.items),
+  CATEGORIES: requireTable("categories", tables.categories),
+  DELIVERY_CHARGES: requireTable("deliveryCharges", tables.deliveryCharges),
+  RADIUS: requireTable("radius", tables.radius),
+  SURCHARGE: requireTable("surcharge", tables.surcharge),
 };
