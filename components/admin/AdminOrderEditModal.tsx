@@ -1,20 +1,20 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import { FiMinus, FiPlus, FiSearch, FiX } from "react-icons/fi";
 
 import AdminFormField from "./AdminFormField";
 import AdminModal from "./AdminModal";
-import { AdminOrder, AdminOrderItem } from "@/data/admin/adminOrders";
+import type { AdminOrder, AdminOrderItem } from "@/lib/admin/orders";
 import { products } from "@/data/products";
 
 type Props = {
   order?: AdminOrder | null;
   open: boolean;
   onClose: () => void;
+  onOrderUpdated?: (order: AdminOrder) => void;
 };
-
-export default function AdminOrderEditModal({ order, open, onClose }: Props) {
+export default function AdminOrderEditModal({ order, open, onClose, onOrderUpdated }: Props) {
   const [items, setItems] = useState<AdminOrderItem[]>([]);
   const [address, setAddress] = useState("");
   const [phone, setPhone] = useState("");
@@ -23,11 +23,12 @@ export default function AdminOrderEditModal({ order, open, onClose }: Props) {
   const [surcharge, setSurcharge] = useState(0);
   const [showProductPicker, setShowProductPicker] = useState(false);
   const [search, setSearch] = useState("");
+  const [isSaving, startTransition] = useTransition();
 
   useEffect(() => {
     if (order) {
       setItems(order.items);
-      setAddress(order.customerLocation);
+      setAddress(order.deliveryLocation || "");
       setPhone(order.customerPhone);
       setDeliveryCharge(order.deliveryCharge);
       setTax(order.tax);
@@ -65,6 +66,37 @@ export default function AdminOrderEditModal({ order, open, onClose }: Props) {
 
   if (!order) return null;
 
+  const handleSave = () => {
+    startTransition(async () => {
+      const itemsResponse = await fetch(`/api/admin/orders/${order.id}/items`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ items, customerPhone: phone, deliveryLocation: address }),
+      });
+
+      const chargesResponse = await fetch(`/api/admin/orders/${order.id}/charges`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ deliveryCharge, tax, surcharge }),
+      });
+
+      let latest: AdminOrder | null = null;
+
+      if (chargesResponse.ok) {
+        latest = (await chargesResponse.json()) as AdminOrder;
+      }
+
+      if (itemsResponse.ok) {
+        latest = (await itemsResponse.json()) as AdminOrder;
+      }
+
+      if (latest) {
+        onOrderUpdated?.(latest);
+        onClose();
+      }
+    });
+  };
+
   return (
     <AdminModal
       open={open}
@@ -75,7 +107,13 @@ export default function AdminOrderEditModal({ order, open, onClose }: Props) {
           <button className="rounded-xl bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-200" onClick={onClose}>
             Cancel
           </button>
-          <button className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700">Save changes</button>
+          <button
+            className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+            onClick={handleSave}
+            disabled={isSaving}
+          >
+            Save changes
+          </button>
         </div>
       }
     >

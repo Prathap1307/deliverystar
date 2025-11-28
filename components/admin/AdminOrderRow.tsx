@@ -1,5 +1,5 @@
 import AdminStatusBadge from "./AdminStatusBadge";
-import { AdminOrder } from "@/data/admin/adminOrders";
+import type { AdminOrder } from "@/lib/admin/orders";
 
 interface Props {
   mode: "dashboard" | "orders";

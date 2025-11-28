@@ -1,4 +1,4 @@
-import { AdminOrderStatus } from "@/data/admin/adminOrders";
+import { getStatusLabel, type AdminOrderStatus } from "@/lib/admin/orders";
 
 type ExtendedStatus =
   | AdminOrderStatus
@@ -20,9 +20,10 @@ const toneMap: Record<ExtendedStatus, string> = {
 };
 
 export default function AdminStatusBadge({ status }: { status: ExtendedStatus }) {
+  const displayStatus = getStatusLabel(status);
   return (
-    <span className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold ${toneMap[status] || "bg-slate-100 text-slate-800 border-slate-200"}`}>
-      {status}
+    <span className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold ${toneMap[displayStatus as ExtendedStatus] || "bg-slate-100 text-slate-800 border-slate-200"}`}>
+      {displayStatus}
     </span>
   );
 }

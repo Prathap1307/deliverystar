@@ -2,7 +2,7 @@
 
 import AdminModal from "./AdminModal";
 import AdminStatusBadge from "./AdminStatusBadge";
-import { AdminOrder, AdminOrderStatus } from "@/data/admin/adminOrders";
+import type { AdminOrder, AdminOrderStatus } from "@/lib/admin/orders";
 
 const defaultHistory: { status: AdminOrderStatus | string; note: string; time: string }[] = [
   { status: "Pending", note: "Order created by customer", time: "09:12" },
@@ -35,7 +35,7 @@ export default function AdminOrderHistoryModal({ order, open, onClose }: Props) 
       }
     >
       <div className="space-y-4">
-        <div className="text-sm text-slate-700">Track every admin + restaurant action. UI only, no backend writes.</div>
+        <div className="text-sm text-slate-700">Track every admin + restaurant action.</div>
         <div className="space-y-3">
           {defaultHistory.map((item, idx) => (
             <div key={`${item.status}-${idx}`} className="flex items-start gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3">

@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import { FiClock } from "react-icons/fi";
 
 import AdminModal from "./AdminModal";
-import { AdminOrder } from "@/data/admin/adminOrders";
+import type { AdminOrder } from "@/lib/admin/orders";
 
 type Props = {
   order?: AdminOrder | null;
@@ -13,7 +13,10 @@ type Props = {
 };
 
 export default function AdminOrderViewModal({ order, open, onClose }: Props) {
-  const timestamp = useMemo(() => new Date().toLocaleString(), []);
+  const timestamp = useMemo(
+    () => (order?.createdAt ? new Date(order.createdAt).toLocaleString() : new Date().toLocaleString()),
+    [order?.createdAt],
+  );
 
   if (!order) return null;
 
@@ -65,7 +68,7 @@ export default function AdminOrderViewModal({ order, open, onClose }: Props) {
           </div>
           <div className="flex items-start justify-between">
             <span className="font-semibold">Address</span>
-            <span className="max-w-[220px] text-right text-slate-900">{order.customerLocation}</span>
+            <span className="max-w-[220px] text-right text-slate-900">{order.deliveryLocation}</span>
           </div>
           {order.instorePickup && (
             <div className="flex items-start justify-between">

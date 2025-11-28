@@ -1,7 +1,7 @@
 "use client";
 
 import AdminModal from "./AdminModal";
-import { AdminOrder } from "@/data/admin/adminOrders";
+import type { AdminOrder } from "@/lib/admin/orders";
 
 interface Props {
   order?: AdminOrder | null;

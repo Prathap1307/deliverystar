@@ -10,26 +10,32 @@ import AdminOrderStatusModal from "./AdminOrderStatusModal";
 import AdminOrderViewModal from "./AdminOrderViewModal";
 import MobileOrderCard from "./MobileOrderCard";
 import OrderTable from "./OrderTable";
-import { AdminOrder, todaysOrders } from "@/data/admin/adminOrders";
+import type { AdminOrder } from "@/lib/admin/orders";
 
-export default function DashboardClient() {
+export default function DashboardClient({ orders }: { orders: AdminOrder[] }) {
+  const [data, setData] = useState<AdminOrder[]>(orders);
   const [viewOrder, setViewOrder] = useState<AdminOrder | null>(null);
   const [statusOrder, setStatusOrder] = useState<AdminOrder | null>(null);
   const [historyOrder, setHistoryOrder] = useState<AdminOrder | null>(null);
 
+  const handleStatusUpdated = (updated: AdminOrder) => {
+    setData((prev) => prev.map((order) => (order.id === updated.id ? updated : order)));
+    setStatusOrder(updated);
+  };
+
   const totals = useMemo(
     () =>
-      todaysOrders.reduce(
+      data.reduce(
         (acc, order) => {
           const itemsTotal = order.items.reduce((sum, item) => sum + item.price * item.qty, 0);
           acc.revenue += itemsTotal + order.deliveryCharge + order.tax + order.surcharge;
-          acc.active += order.status !== "Delivered" ? 1 : 0;
+          acc.active += order.status !== "order_delivered" ? 1 : 0;
           acc.pickups += order.instorePickup ? 1 : 0;
           return acc;
         },
         { revenue: 0, active: 0, pickups: 0 },
       ),
-    [],
+    [data],
   );
 
   return (
@@ -58,7 +64,7 @@ export default function DashboardClient() {
       <AdminCard title="Today’s tickets" description="Desktop table + mobile cards with zero horizontal scroll">
         <OrderTable
           mode="dashboard"
-          orders={todaysOrders}
+          orders={data}
           onView={setViewOrder}
           onEditOrder={() => {}}
           onEditStatus={setStatusOrder}
@@ -66,7 +72,7 @@ export default function DashboardClient() {
           onPrint={setViewOrder}
         />
         <div className="mt-4 grid gap-3">
-          {todaysOrders.map((order) => (
+          {data.map((order) => (
             <MobileOrderCard
               key={order.id}
               mode="dashboard"
@@ -82,7 +88,12 @@ export default function DashboardClient() {
       </AdminCard>
 
       <AdminOrderViewModal order={viewOrder} open={Boolean(viewOrder)} onClose={() => setViewOrder(null)} />
-      <AdminOrderStatusModal order={statusOrder} open={Boolean(statusOrder)} onClose={() => setStatusOrder(null)} />
+      <AdminOrderStatusModal
+        order={statusOrder}
+        open={Boolean(statusOrder)}
+        onClose={() => setStatusOrder(null)}
+        onStatusUpdated={handleStatusUpdated}
+      />
       <AdminOrderHistoryModal order={historyOrder} open={Boolean(historyOrder)} onClose={() => setHistoryOrder(null)} />
     </AdminShell>
   );

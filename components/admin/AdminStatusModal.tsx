@@ -4,7 +4,7 @@ import { useState } from "react";
 
 import AdminModal from "./AdminModal";
 import AdminStatusBadge from "./AdminStatusBadge";
-import { AdminOrder, AdminOrderStatus } from "@/data/admin/adminOrders";
+import type { AdminOrder, AdminOrderStatus } from "@/lib/admin/orders";
 
 const statuses: AdminOrderStatus[] = [
   "Pending",

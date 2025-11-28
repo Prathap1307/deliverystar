@@ -1,7 +1,7 @@
 "use client";
 
 import AdminOrderRow from "./AdminOrderRow";
-import { AdminOrder } from "@/data/admin/adminOrders";
+import type { AdminOrder } from "@/lib/admin/orders";
 
 interface Props {
   orders: AdminOrder[];
