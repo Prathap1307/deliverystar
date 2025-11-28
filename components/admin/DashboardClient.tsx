@@ -5,31 +5,37 @@ import { useMemo, useState } from "react";
 import AdminCard from "./AdminCard";
 import AdminPageTitle from "./AdminPageTitle";
 import AdminShell from "./AdminShell";
-import AdminEditModal from "./AdminEditModal";
-import AdminStatusModal from "./AdminStatusModal";
-import AdminViewModal from "./AdminViewModal";
+import AdminOrderHistoryModal from "./AdminOrderHistoryModal";
+import AdminOrderStatusModal from "./AdminOrderStatusModal";
+import AdminOrderViewModal from "./AdminOrderViewModal";
 import MobileOrderCard from "./MobileOrderCard";
 import OrderTable from "./OrderTable";
-import { AdminOrder, todaysOrders } from "@/data/admin/adminOrders";
+import type { AdminOrder } from "@/lib/admin/orders";
 
-export default function DashboardClient() {
+export default function DashboardClient({ orders }: { orders: AdminOrder[] }) {
+  const [data, setData] = useState<AdminOrder[]>(orders);
   const [viewOrder, setViewOrder] = useState<AdminOrder | null>(null);
-  const [editOrder, setEditOrder] = useState<AdminOrder | null>(null);
   const [statusOrder, setStatusOrder] = useState<AdminOrder | null>(null);
+  const [historyOrder, setHistoryOrder] = useState<AdminOrder | null>(null);
+
+  const handleStatusUpdated = (updated: AdminOrder) => {
+    setData((prev) => prev.map((order) => (order.id === updated.id ? updated : order)));
+    setStatusOrder(updated);
+  };
 
   const totals = useMemo(
     () =>
-      todaysOrders.reduce(
+      data.reduce(
         (acc, order) => {
           const itemsTotal = order.items.reduce((sum, item) => sum + item.price * item.qty, 0);
           acc.revenue += itemsTotal + order.deliveryCharge + order.tax + order.surcharge;
-          acc.active += order.status !== "Delivered" ? 1 : 0;
+          acc.active += order.status !== "order_delivered" ? 1 : 0;
           acc.pickups += order.instorePickup ? 1 : 0;
           return acc;
         },
         { revenue: 0, active: 0, pickups: 0 },
       ),
-    [],
+    [data],
   );
 
   return (
@@ -56,27 +62,39 @@ export default function DashboardClient() {
       </div>
 
       <AdminCard title="Today’s tickets" description="Desktop table + mobile cards with zero horizontal scroll">
-        <OrderTable orders={todaysOrders} onView={setViewOrder} onEdit={setEditOrder} onStatus={setStatusOrder} />
+        <OrderTable
+          mode="dashboard"
+          orders={data}
+          onView={setViewOrder}
+          onEditOrder={() => {}}
+          onEditStatus={setStatusOrder}
+          onHistory={setHistoryOrder}
+          onPrint={setViewOrder}
+        />
         <div className="mt-4 grid gap-3">
-          {todaysOrders.map((order) => (
-            <MobileOrderCard key={order.id} order={order} onView={setViewOrder} onEdit={setEditOrder} onStatus={setStatusOrder} />
+          {data.map((order) => (
+            <MobileOrderCard
+              key={order.id}
+              mode="dashboard"
+              order={order}
+              onView={setViewOrder}
+              onEditOrder={() => {}}
+              onEditStatus={setStatusOrder}
+              onHistory={setHistoryOrder}
+              onPrint={setViewOrder}
+            />
           ))}
         </div>
       </AdminCard>
 
-      <AdminViewModal order={viewOrder} open={Boolean(viewOrder)} onClose={() => setViewOrder(null)} />
-      <AdminEditModal
-        key={editOrder?.id ?? "edit-modal"}
-        order={editOrder}
-        open={Boolean(editOrder)}
-        onClose={() => setEditOrder(null)}
-      />
-      <AdminStatusModal
-        key={statusOrder?.id ?? "status-modal"}
+      <AdminOrderViewModal order={viewOrder} open={Boolean(viewOrder)} onClose={() => setViewOrder(null)} />
+      <AdminOrderStatusModal
         order={statusOrder}
         open={Boolean(statusOrder)}
         onClose={() => setStatusOrder(null)}
+        onStatusUpdated={handleStatusUpdated}
       />
+      <AdminOrderHistoryModal order={historyOrder} open={Boolean(historyOrder)} onClose={() => setHistoryOrder(null)} />
     </AdminShell>
   );
 }
