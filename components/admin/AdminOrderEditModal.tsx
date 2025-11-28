@@ -6,7 +6,7 @@ import { FiMinus, FiPlus, FiSearch, FiX } from "react-icons/fi";
 import AdminFormField from "./AdminFormField";
 import AdminModal from "./AdminModal";
 import type { AdminOrder, AdminOrderItem } from "@/lib/admin/orders";
-import { products } from "@/data/products";
+import type { AdminItem } from "@/lib/admin/catalog";
 
 type Props = {
   order?: AdminOrder | null;
@@ -24,6 +24,7 @@ export default function AdminOrderEditModal({ order, open, onClose, onOrderUpdat
   const [showProductPicker, setShowProductPicker] = useState(false);
   const [search, setSearch] = useState("");
   const [isSaving, startTransition] = useTransition();
+  const [productOptions, setProductOptions] = useState<Pick<AdminItem, "id" | "name" | "price">[]>([]);
 
   useEffect(() => {
     if (order) {
@@ -38,12 +39,26 @@ export default function AdminOrderEditModal({ order, open, onClose, onOrderUpdat
     }
   }, [order]);
 
+  useEffect(() => {
+    const loadProducts = async () => {
+      try {
+        const res = await fetch("/api/admin/items");
+        const json = await res.json();
+        setProductOptions(json.data ?? json ?? []);
+      } catch (err) {
+        console.error("Failed to load products for order editing", err);
+      }
+    };
+
+    loadProducts();
+  }, []);
+
   const filteredProducts = useMemo(
     () =>
-      products.filter((product) =>
+      productOptions.filter((product) =>
         product.name.toLowerCase().includes(search.trim().toLowerCase()),
       ),
-    [search],
+    [productOptions, search],
   );
 
   const addProduct = (name: string, price: number) => {
@@ -68,31 +83,30 @@ export default function AdminOrderEditModal({ order, open, onClose, onOrderUpdat
 
   const handleSave = () => {
     startTransition(async () => {
-      const itemsResponse = await fetch(`/api/admin/orders/${order.id}/items`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ items, customerPhone: phone, deliveryLocation: address }),
-      });
+      try {
+        const response = await fetch(`/api/admin/orders`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            id: order.id,
+            items,
+            customerPhone: phone,
+            deliveryLocation: address,
+            deliveryCharge,
+            tax,
+            surcharge,
+          }),
+        });
 
-      const chargesResponse = await fetch(`/api/admin/orders/${order.id}/charges`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ deliveryCharge, tax, surcharge }),
-      });
-
-      let latest: AdminOrder | null = null;
-
-      if (chargesResponse.ok) {
-        latest = (await chargesResponse.json()) as AdminOrder;
-      }
-
-      if (itemsResponse.ok) {
-        latest = (await itemsResponse.json()) as AdminOrder;
-      }
-
-      if (latest) {
-        onOrderUpdated?.(latest);
-        onClose();
+        if (response.ok) {
+          const { data } = (await response.json()) as { data: AdminOrder };
+          if (data) {
+            onOrderUpdated?.(data);
+            onClose();
+          }
+        }
+      } catch (error) {
+        console.error("Failed to update order", error);
       }
     });
   };
@@ -166,7 +180,7 @@ export default function AdminOrderEditModal({ order, open, onClose, onOrderUpdat
                 {filteredProducts.map((product) => (
                   <button
                     key={product.id}
-                    onClick={() => addProduct(product.name, product.price)}
+                    onClick={() => addProduct(product.name, Number(product.price))}
                     className="flex items-center justify-between rounded-xl border border-slate-200 px-3 py-2 text-left font-semibold text-slate-800 transition hover:border-blue-400 hover:bg-blue-50"
                   >
                     <div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FiPlus } from "react-icons/fi";
 
 import AdminBadge from "./AdminBadge";
@@ -22,6 +22,20 @@ interface Props {
 export default function SurchargeClient({ initialRules }: Props) {
   const [rules, setRules] = useState<SurchargeRule[]>(initialRules);
   const [draft, setDraft] = useState<SurchargeRule>(() => ({ id: crypto.randomUUID(), reason: "", price: "" }));
+
+  const loadRules = async () => {
+    try {
+      const res = await fetch("/api/admin/settings/surcharge-rules");
+      const json = await res.json();
+      setRules(json.data ?? json ?? []);
+    } catch (err) {
+      console.error("Failed to load surcharge rules", err);
+    }
+  };
+
+  useEffect(() => {
+    void loadRules();
+  }, []);
 
   const persistRules = async (nextRules: SurchargeRule[]) => {
     setRules(nextRules);

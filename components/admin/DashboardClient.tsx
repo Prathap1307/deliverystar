@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import AdminCard from "./AdminCard";
 import AdminPageTitle from "./AdminPageTitle";
@@ -17,6 +17,20 @@ export default function DashboardClient({ orders }: { orders: AdminOrder[] }) {
   const [viewOrder, setViewOrder] = useState<AdminOrder | null>(null);
   const [statusOrder, setStatusOrder] = useState<AdminOrder | null>(null);
   const [historyOrder, setHistoryOrder] = useState<AdminOrder | null>(null);
+
+  useEffect(() => {
+    const loadOrders = async () => {
+      try {
+        const res = await fetch("/api/admin/orders?scope=today");
+        const json = await res.json();
+        setData(json.data ?? []);
+      } catch (err) {
+        console.error("Failed to load dashboard orders", err);
+      }
+    };
+
+    loadOrders();
+  }, []);
 
   const handleStatusUpdated = (updated: AdminOrder) => {
     setData((prev) => prev.map((order) => (order.id === updated.id ? updated : order)));

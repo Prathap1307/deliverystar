@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FiPlus } from "react-icons/fi";
 
 import AdminBadge from "./AdminBadge";
@@ -27,6 +27,19 @@ export default function AdminCategoriesClient({ initialCategories }: Props) {
   const [modalOpen, setModalOpen] = useState(false);
   const [formState, setFormState] = useState({ name: "", active: true, reason: "", reactivateOn: "" });
   const [categories, setCategories] = useState<AdminCategory[]>(initialCategories);
+  const loadCategories = async () => {
+    try {
+      const res = await fetch("/api/admin/categories");
+      const json = await res.json();
+      setCategories(json.data ?? json ?? []);
+    } catch (err) {
+      console.error("Failed to load categories", err);
+    }
+  };
+
+  useEffect(() => {
+    void loadCategories();
+  }, []);
 
   const persistCategory = async (category: AdminCategory) => {
     await fetch("/api/admin/categories", {
@@ -35,15 +48,7 @@ export default function AdminCategoriesClient({ initialCategories }: Props) {
       body: JSON.stringify(category),
     });
 
-    setCategories((prev) => {
-      const index = prev.findIndex((entry) => entry.id === category.id);
-      if (index >= 0) {
-        const copy = [...prev];
-        copy[index] = category;
-        return copy;
-      }
-      return [...prev, category];
-    });
+    await loadCategories();
   };
 
   const handleSave = async () => {

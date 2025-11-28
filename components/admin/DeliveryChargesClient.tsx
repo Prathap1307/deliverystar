@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FiPlus } from "react-icons/fi";
 
 import AdminBadge from "./AdminBadge";
@@ -23,6 +23,20 @@ interface Props {
 export default function DeliveryChargesClient({ initialRules }: Props) {
   const [rules, setRules] = useState<Rule[]>(initialRules);
   const [draft, setDraft] = useState<Rule>(() => ({ id: crypto.randomUUID(), miles: "", price: "", timeWindow: "" }));
+
+  const loadRules = async () => {
+    try {
+      const res = await fetch("/api/admin/settings/delivery-charges");
+      const json = await res.json();
+      setRules(json.data ?? json ?? []);
+    } catch (err) {
+      console.error("Failed to load delivery charges", err);
+    }
+  };
+
+  useEffect(() => {
+    void loadRules();
+  }, []);
 
   const persistRules = async (nextRules: Rule[]) => {
     setRules(nextRules);

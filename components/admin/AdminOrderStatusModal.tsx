@@ -34,16 +34,22 @@ export default function AdminOrderStatusModal({ order, open, onClose, onStatusUp
 
   const handleSave = () => {
     startTransition(async () => {
-      const response = await fetch(`/api/admin/orders/${order.id}/status`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: selected }),
-      });
+      try {
+        const response = await fetch(`/api/admin/orders`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: order.id, status: selected }),
+        });
 
-      if (response.ok) {
-        const updated = (await response.json()) as AdminOrder;
-        onStatusUpdated?.(updated);
-        onClose();
+        if (response.ok) {
+          const { data } = (await response.json()) as { data: AdminOrder };
+          if (data) {
+            onStatusUpdated?.(data);
+            onClose();
+          }
+        }
+      } catch (error) {
+        console.error("Failed to update order status", error);
       }
     });
   };

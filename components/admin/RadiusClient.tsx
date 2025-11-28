@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FiPlus } from "react-icons/fi";
 
 import AdminBadge from "./AdminBadge";
@@ -24,6 +24,20 @@ interface Props {
 export default function RadiusClient({ initialZones }: Props) {
   const [zones, setZones] = useState<Zone[]>(initialZones);
   const [draft, setDraft] = useState<Zone>(() => ({ id: crypto.randomUUID(), name: "", lat: "", lng: "", radius: "" }));
+
+  const loadZones = async () => {
+    try {
+      const res = await fetch("/api/admin/settings/radius-zones");
+      const json = await res.json();
+      setZones(json.data ?? json ?? []);
+    } catch (err) {
+      console.error("Failed to load radius zones", err);
+    }
+  };
+
+  useEffect(() => {
+    void loadZones();
+  }, []);
 
   const persistZones = async (nextZones: Zone[]) => {
     setZones(nextZones);

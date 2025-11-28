@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import AdminBadge from "./AdminBadge";
 import AdminCard from "./AdminCard";
@@ -18,7 +18,33 @@ const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
 const slots = ["08:00–12:00", "16:00–22:00"];
 
 export default function CategorySchedulerClient({ initialCategories, initialSelection }: Props) {
+  const [categories, setCategories] = useState<AdminCategory[]>(initialCategories);
   const [selectedCategories, setSelectedCategories] = useState<string[]>(initialSelection.ids);
+
+  const loadCategories = async () => {
+    try {
+      const res = await fetch("/api/admin/categories");
+      const json = await res.json();
+      setCategories(json.data ?? json ?? []);
+    } catch (err) {
+      console.error("Failed to load categories for schedule", err);
+    }
+  };
+
+  const loadSelection = async () => {
+    try {
+      const res = await fetch("/api/admin/settings/category-schedule");
+      const json = await res.json();
+      setSelectedCategories(json.ids ?? json?.data?.ids ?? []);
+    } catch (err) {
+      console.error("Failed to load category selection", err);
+    }
+  };
+
+  useEffect(() => {
+    void loadCategories();
+    void loadSelection();
+  }, []);
 
   const persistSelection = async () => {
     await fetch("/api/admin/settings/category-schedule", {
@@ -53,7 +79,7 @@ export default function CategorySchedulerClient({ initialCategories, initialSele
         <AdminCard title="Choose categories" description="Pick which categories to schedule">
           <AdminTable
             columns={columns}
-            data={initialCategories}
+            data={categories}
             renderCell={(category, key) => {
               if (key === "active") return category.active ? <AdminBadge label="Active" tone="success" /> : <AdminBadge label="Inactive" tone="warning" />;
               if (key === "actions")

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import AdminBadge from "./AdminBadge";
 import AdminCard from "./AdminCard";
@@ -18,7 +18,33 @@ const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
 const slots = ["08:00–12:00", "16:00–22:00"];
 
 export default function ItemSchedulerClient({ initialItems, initialSelection }: Props) {
+  const [items, setItems] = useState<AdminItem[]>(initialItems);
   const [selectedItems, setSelectedItems] = useState<string[]>(initialSelection.ids);
+
+  const loadItems = async () => {
+    try {
+      const res = await fetch("/api/admin/items");
+      const json = await res.json();
+      setItems(json.data ?? json ?? []);
+    } catch (err) {
+      console.error("Failed to load items for schedule", err);
+    }
+  };
+
+  const loadSelection = async () => {
+    try {
+      const res = await fetch("/api/admin/settings/item-schedule");
+      const json = await res.json();
+      setSelectedItems(json.ids ?? json?.data?.ids ?? []);
+    } catch (err) {
+      console.error("Failed to load item schedule", err);
+    }
+  };
+
+  useEffect(() => {
+    void loadItems();
+    void loadSelection();
+  }, []);
 
   const persistSelection = async () => {
     await fetch("/api/admin/settings/item-schedule", {
@@ -54,7 +80,7 @@ export default function ItemSchedulerClient({ initialItems, initialSelection }: 
         <AdminCard title="Choose items" description="Multi-select items for scheduling">
           <AdminTable
             columns={columns}
-            data={initialItems}
+            data={items}
             renderCell={(item, key) => {
               if (key === "active") return item.active ? <AdminBadge label="Active" tone="success" /> : <AdminBadge label="Inactive" tone="warning" />;
               if (key === "actions")

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FiPlus, FiToggleLeft, FiToggleRight } from "react-icons/fi";
 
 import AdminBadge from "./AdminBadge";
@@ -40,6 +40,20 @@ export default function AdminItemsClient({ initialItems }: Props) {
     schedule: "",
   });
 
+  const loadItems = async () => {
+    try {
+      const res = await fetch("/api/admin/items");
+      const json = await res.json();
+      setItems(json.data ?? json ?? []);
+    } catch (err) {
+      console.error("Failed to load items", err);
+    }
+  };
+
+  useEffect(() => {
+    loadItems();
+  }, []);
+
   const handleSave = async () => {
     const id = editingItemId ?? crypto.randomUUID();
     const nextItem: AdminItem = {
@@ -58,15 +72,7 @@ export default function AdminItemsClient({ initialItems }: Props) {
       body: JSON.stringify(nextItem),
     });
 
-    setItems((prev) => {
-      const existing = prev.findIndex((item) => item.id === nextItem.id);
-      if (existing >= 0) {
-        const copy = [...prev];
-        copy[existing] = nextItem;
-        return copy;
-      }
-      return [...prev, nextItem];
-    });
+    await loadItems();
     setModalOpen(false);
   };
 
@@ -76,7 +82,7 @@ export default function AdminItemsClient({ initialItems }: Props) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id }),
     });
-    setItems((prev) => prev.filter((item) => item.id !== id));
+    await loadItems();
   };
 
   return (

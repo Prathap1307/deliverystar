@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import AdminCard from "./AdminCard";
 import AdminOrderEditModal from "./AdminOrderEditModal";
@@ -17,6 +17,20 @@ export default function AdminOrdersClient({ orders }: { orders: AdminOrder[] }) 
   const [viewOrder, setViewOrder] = useState<AdminOrder | null>(null);
   const [editOrder, setEditOrder] = useState<AdminOrder | null>(null);
   const [historyOrder, setHistoryOrder] = useState<AdminOrder | null>(null);
+
+  useEffect(() => {
+    const loadOrders = async () => {
+      try {
+        const res = await fetch("/api/admin/orders");
+        const json = await res.json();
+        setData(json.data ?? []);
+      } catch (err) {
+        console.error("Failed to load orders", err);
+      }
+    };
+
+    loadOrders();
+  }, []);
 
   const handleOrderUpdated = (updated: AdminOrder) => {
     setData((prev) => prev.map((order) => (order.id === updated.id ? updated : order)));
