@@ -3,11 +3,11 @@
 import { useState } from "react";
 
 import AdminCard from "./AdminCard";
-import AdminEditModal from "./AdminEditModal";
+import AdminOrderEditModal from "./AdminOrderEditModal";
+import AdminOrderHistoryModal from "./AdminOrderHistoryModal";
+import AdminOrderViewModal from "./AdminOrderViewModal";
 import AdminPageTitle from "./AdminPageTitle";
 import AdminShell from "./AdminShell";
-import AdminStatusModal from "./AdminStatusModal";
-import AdminViewModal from "./AdminViewModal";
 import MobileOrderCard from "./MobileOrderCard";
 import OrderTable from "./OrderTable";
 import { AdminOrder, allOrders } from "@/data/admin/adminOrders";
@@ -15,7 +15,7 @@ import { AdminOrder, allOrders } from "@/data/admin/adminOrders";
 export default function AdminOrdersClient() {
   const [viewOrder, setViewOrder] = useState<AdminOrder | null>(null);
   const [editOrder, setEditOrder] = useState<AdminOrder | null>(null);
-  const [statusOrder, setStatusOrder] = useState<AdminOrder | null>(null);
+  const [historyOrder, setHistoryOrder] = useState<AdminOrder | null>(null);
 
   return (
     <AdminShell>
@@ -26,27 +26,34 @@ export default function AdminOrdersClient() {
       />
 
       <AdminCard title="Orders backlog" description="Desktop grid with mobile cards. No backend mutations.">
-        <OrderTable orders={allOrders} onView={setViewOrder} onEdit={setEditOrder} onStatus={setStatusOrder} />
+        <OrderTable
+          mode="orders"
+          orders={allOrders}
+          onView={setViewOrder}
+          onEditOrder={setEditOrder}
+          onEditStatus={() => {}}
+          onHistory={setHistoryOrder}
+          onPrint={setViewOrder}
+        />
         <div className="mt-4 grid gap-3">
           {allOrders.map((order) => (
-            <MobileOrderCard key={order.id} order={order} onView={setViewOrder} onEdit={setEditOrder} onStatus={setStatusOrder} />
+            <MobileOrderCard
+              key={order.id}
+              mode="orders"
+              order={order}
+              onView={setViewOrder}
+              onEditOrder={setEditOrder}
+              onEditStatus={() => {}}
+              onHistory={setHistoryOrder}
+              onPrint={setViewOrder}
+            />
           ))}
         </div>
       </AdminCard>
 
-      <AdminViewModal order={viewOrder} open={Boolean(viewOrder)} onClose={() => setViewOrder(null)} />
-      <AdminEditModal
-        key={editOrder?.id ?? "edit-modal"}
-        order={editOrder}
-        open={Boolean(editOrder)}
-        onClose={() => setEditOrder(null)}
-      />
-      <AdminStatusModal
-        key={statusOrder?.id ?? "status-modal"}
-        order={statusOrder}
-        open={Boolean(statusOrder)}
-        onClose={() => setStatusOrder(null)}
-      />
+      <AdminOrderViewModal order={viewOrder} open={Boolean(viewOrder)} onClose={() => setViewOrder(null)} />
+      <AdminOrderEditModal order={editOrder} open={Boolean(editOrder)} onClose={() => setEditOrder(null)} />
+      <AdminOrderHistoryModal order={historyOrder} open={Boolean(historyOrder)} onClose={() => setHistoryOrder(null)} />
     </AdminShell>
   );
 }

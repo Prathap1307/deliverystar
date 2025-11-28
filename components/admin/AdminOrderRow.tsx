@@ -2,13 +2,16 @@ import AdminStatusBadge from "./AdminStatusBadge";
 import { AdminOrder } from "@/data/admin/adminOrders";
 
 interface Props {
+  mode: "dashboard" | "orders";
   order: AdminOrder;
   onView: (order: AdminOrder) => void;
-  onEdit: (order: AdminOrder) => void;
-  onStatus: (order: AdminOrder) => void;
+  onEditOrder: (order: AdminOrder) => void;
+  onEditStatus: (order: AdminOrder) => void;
+  onHistory: (order: AdminOrder) => void;
+  onPrint: (order: AdminOrder) => void;
 }
 
-export default function AdminOrderRow({ order, onView, onEdit, onStatus }: Props) {
+export default function AdminOrderRow({ mode, order, onView, onEditOrder, onEditStatus, onHistory, onPrint }: Props) {
   const itemSummary = order.items.map((item) => `${item.name} x${item.qty}`).join(", ");
 
   return (
@@ -34,14 +37,29 @@ export default function AdminOrderRow({ order, onView, onEdit, onStatus }: Props
         <div className="flex flex-col gap-2 text-xs font-semibold text-slate-800">
           <AdminStatusBadge status={order.status} />
           <div className="flex flex-wrap gap-2">
-            <button onClick={() => onEdit(order)} className="rounded-lg bg-amber-50 px-3 py-1 text-amber-700 transition hover:bg-amber-100">
-              Edit
-            </button>
             <button onClick={() => onView(order)} className="rounded-lg bg-blue-50 px-3 py-1 text-blue-700 transition hover:bg-blue-100">
               View
             </button>
-            <button onClick={() => onStatus(order)} className="rounded-lg bg-slate-900 px-3 py-1 text-white transition hover:bg-slate-800">
-              Status
+            {mode === "dashboard" ? (
+              <button
+                onClick={() => onEditStatus(order)}
+                className="rounded-lg bg-amber-50 px-3 py-1 text-amber-700 transition hover:bg-amber-100"
+              >
+                Edit Status
+              </button>
+            ) : (
+              <button
+                onClick={() => onEditOrder(order)}
+                className="rounded-lg bg-amber-50 px-3 py-1 text-amber-700 transition hover:bg-amber-100"
+              >
+                Edit Order
+              </button>
+            )}
+            <button onClick={() => onPrint(order)} className="rounded-lg bg-slate-900 px-3 py-1 text-white transition hover:bg-slate-800">
+              Print
+            </button>
+            <button onClick={() => onHistory(order)} className="rounded-lg bg-slate-100 px-3 py-1 text-slate-800 transition hover:bg-slate-200">
+              History
             </button>
           </div>
         </div>

@@ -8,14 +8,17 @@ interface AdminModalProps {
   onClose: () => void;
   children: React.ReactNode;
   footer?: React.ReactNode;
+  maxWidthClass?: string;
 }
 
-export function AdminModal({ title, open, onClose, children, footer }: AdminModalProps) {
+export function AdminModal({ title, open, onClose, children, footer, maxWidthClass = "max-w-2xl" }: AdminModalProps) {
   if (!open) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 px-3 py-6 backdrop-blur">
-      <div className="relative flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
+      <div
+        className={`relative flex max-h-[90vh] w-full ${maxWidthClass} flex-col overflow-hidden rounded-2xl bg-white shadow-2xl`}
+      >
         <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4">
           <h3 className="text-lg font-semibold text-slate-900">{title}</h3>
           <button
