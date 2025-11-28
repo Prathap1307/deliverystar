@@ -20,15 +20,23 @@ interface Props {
   initialRules: Rule[];
 }
 
+function normalizeRules(value: unknown): Rule[] {
+  if (Array.isArray(value)) return value as Rule[];
+  if (value && typeof value === "object" && Array.isArray((value as any).data)) {
+    return (value as any).data as Rule[];
+  }
+  return [];
+}
+
 export default function DeliveryChargesClient({ initialRules }: Props) {
-  const [rules, setRules] = useState<Rule[]>(initialRules);
+  const [rules, setRules] = useState<Rule[]>(() => normalizeRules(initialRules));
   const [draft, setDraft] = useState<Rule>(() => ({ id: crypto.randomUUID(), miles: "", price: "", timeWindow: "" }));
 
   const loadRules = async () => {
     try {
       const res = await fetch("/api/admin/settings/delivery-charges");
       const json = await res.json();
-      setRules(json.data ?? json ?? []);
+      setRules(normalizeRules(json));
     } catch (err) {
       console.error("Failed to load delivery charges", err);
     }
