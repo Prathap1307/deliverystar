@@ -5,7 +5,7 @@ import { FiMinus, FiPlus, FiX } from "react-icons/fi";
 
 import AdminFormField from "./AdminFormField";
 import AdminModal from "./AdminModal";
-import { AdminOrder, AdminOrderItem } from "@/data/admin/adminOrders";
+import type { AdminOrder, AdminOrderItem } from "@/lib/admin/orders";
 
 const menuItems: AdminOrderItem[] = [
   { name: "Biryani", qty: 1, price: 8.99 },

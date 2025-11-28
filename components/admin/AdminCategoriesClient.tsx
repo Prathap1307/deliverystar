@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FiPlus } from "react-icons/fi";
 
 import AdminBadge from "./AdminBadge";
@@ -10,7 +10,11 @@ import AdminModal from "./AdminModal";
 import AdminPageTitle from "./AdminPageTitle";
 import AdminShell from "./AdminShell";
 import AdminTable from "./AdminTable";
-import { adminCategories } from "@/data/adminCategories";
+import type { AdminCategory } from "@/lib/admin/catalog";
+
+interface Props {
+  initialCategories: AdminCategory[];
+}
 
 const columns = [
   { key: "name", label: "Category" },
@@ -19,9 +23,47 @@ const columns = [
   { key: "actions", label: "Actions" },
 ];
 
-export default function AdminCategoriesClient() {
+export default function AdminCategoriesClient({ initialCategories }: Props) {
   const [modalOpen, setModalOpen] = useState(false);
   const [formState, setFormState] = useState({ name: "", active: true, reason: "", reactivateOn: "" });
+  const [categories, setCategories] = useState<AdminCategory[]>(initialCategories);
+  const loadCategories = async () => {
+    try {
+      const res = await fetch("/api/admin/categories");
+      const json = await res.json();
+      setCategories(json.data ?? json ?? []);
+    } catch (err) {
+      console.error("Failed to load categories", err);
+    }
+  };
+
+  useEffect(() => {
+    void loadCategories();
+  }, []);
+
+  const persistCategory = async (category: AdminCategory) => {
+    await fetch("/api/admin/categories", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(category),
+    });
+
+    await loadCategories();
+  };
+
+  const handleSave = async () => {
+    const id = formState.name ? formState.name.toLowerCase().replace(/\s+/g, "-") : crypto.randomUUID();
+    const nextCategory: AdminCategory = {
+      id,
+      name: formState.name,
+      active: formState.active,
+      reason: formState.reason,
+      reactivateOn: formState.reactivateOn,
+    };
+
+    await persistCategory(nextCategory);
+    setModalOpen(false);
+  };
 
   return (
     <AdminShell>
@@ -44,7 +86,7 @@ export default function AdminCategoriesClient() {
       <AdminCard title="Category controls" description="Use badges to flag deactivated categories with reasons and dates">
         <AdminTable
           columns={columns}
-          data={adminCategories}
+          data={categories}
           renderCell={(category, key) => {
             if (key === "active")
               return category.active ? <AdminBadge label="Active" tone="success" /> : <AdminBadge label="Inactive" tone="warning" />;
@@ -52,9 +94,32 @@ export default function AdminCategoriesClient() {
             if (key === "actions")
               return (
                 <div className="flex flex-wrap items-center gap-2 text-xs font-semibold">
-                  <button className="rounded-lg bg-blue-50 px-3 py-1 text-blue-700 hover:bg-blue-100">Activate</button>
-                  <button className="rounded-lg bg-rose-50 px-3 py-1 text-rose-700 hover:bg-rose-100">Deactivate</button>
-                  <button className="rounded-lg bg-slate-900 px-3 py-1 text-white hover:bg-slate-800">Save</button>
+                  <button
+                    className="rounded-lg bg-blue-50 px-3 py-1 text-blue-700 hover:bg-blue-100"
+                    onClick={() => persistCategory({ ...category, active: true })}
+                  >
+                    Activate
+                  </button>
+                  <button
+                    className="rounded-lg bg-rose-50 px-3 py-1 text-rose-700 hover:bg-rose-100"
+                    onClick={() => persistCategory({ ...category, active: false })}
+                  >
+                    Deactivate
+                  </button>
+                  <button
+                    className="rounded-lg bg-slate-900 px-3 py-1 text-white hover:bg-slate-800"
+                    onClick={() => {
+                      setFormState({
+                        name: category.name,
+                        active: category.active,
+                        reason: category.reason || "",
+                        reactivateOn: category.reactivateOn || "",
+                      });
+                      setModalOpen(true);
+                    }}
+                  >
+                    Save
+                  </button>
                 </div>
               );
             const fallback = category[key as keyof typeof category];
@@ -72,7 +137,12 @@ export default function AdminCategoriesClient() {
             <button className="rounded-xl bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-200" onClick={() => setModalOpen(false)}>
               Cancel
             </button>
-            <button className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700">Save category</button>
+            <button
+              className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700"
+              onClick={handleSave}
+            >
+              Save category
+            </button>
           </>
         }
       >

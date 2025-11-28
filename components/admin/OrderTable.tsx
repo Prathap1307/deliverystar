@@ -1,13 +1,16 @@
 "use client";
 
 import AdminOrderRow from "./AdminOrderRow";
-import { AdminOrder } from "@/data/admin/adminOrders";
+import type { AdminOrder } from "@/lib/admin/orders";
 
 interface Props {
   orders: AdminOrder[];
+  mode: "dashboard" | "orders";
   onView: (order: AdminOrder) => void;
-  onEdit: (order: AdminOrder) => void;
-  onStatus: (order: AdminOrder) => void;
+  onEditOrder: (order: AdminOrder) => void;
+  onEditStatus: (order: AdminOrder) => void;
+  onHistory: (order: AdminOrder) => void;
+  onPrint: (order: AdminOrder) => void;
 }
 
 const headers = [
@@ -25,7 +28,7 @@ const headers = [
   "Actions",
 ];
 
-export default function OrderTable({ orders, onView, onEdit, onStatus }: Props) {
+export default function OrderTable({ orders, mode, onView, onEditOrder, onEditStatus, onHistory, onPrint }: Props) {
   return (
     <div className="hidden rounded-2xl border border-slate-200 bg-white shadow-sm lg:block">
       <table className="min-w-full border-collapse text-sm text-slate-800">
@@ -40,7 +43,16 @@ export default function OrderTable({ orders, onView, onEdit, onStatus }: Props) 
         </thead>
         <tbody className="whitespace-normal">
           {orders.map((order) => (
-            <AdminOrderRow key={order.id} order={order} onView={onView} onEdit={onEdit} onStatus={onStatus} />
+            <AdminOrderRow
+              key={order.id}
+              mode={mode}
+              order={order}
+              onView={onView}
+              onEditOrder={onEditOrder}
+              onEditStatus={onEditStatus}
+              onHistory={onHistory}
+              onPrint={onPrint}
+            />
           ))}
         </tbody>
       </table>

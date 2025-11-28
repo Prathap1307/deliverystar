@@ -1,19 +1,58 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import AdminBadge from "./AdminBadge";
 import AdminCard from "./AdminCard";
 import AdminPageTitle from "./AdminPageTitle";
 import AdminShell from "./AdminShell";
 import AdminTable from "./AdminTable";
-import { adminItems } from "@/data/adminItems";
+import type { AdminItem, SchedulerSelection } from "@/lib/admin/catalog";
+
+interface Props {
+  initialItems: AdminItem[];
+  initialSelection: SchedulerSelection;
+}
 
 const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 const slots = ["08:00–12:00", "16:00–22:00"];
 
-export default function ItemSchedulerClient() {
-  const [selectedItems, setSelectedItems] = useState<number[]>([1, 2]);
+export default function ItemSchedulerClient({ initialItems, initialSelection }: Props) {
+  const [items, setItems] = useState<AdminItem[]>(initialItems);
+  const [selectedItems, setSelectedItems] = useState<string[]>(initialSelection.ids);
+
+  const loadItems = async () => {
+    try {
+      const res = await fetch("/api/admin/items");
+      const json = await res.json();
+      setItems(json.data ?? json ?? []);
+    } catch (err) {
+      console.error("Failed to load items for schedule", err);
+    }
+  };
+
+  const loadSelection = async () => {
+    try {
+      const res = await fetch("/api/admin/settings/item-schedule");
+      const json = await res.json();
+      setSelectedItems(json.ids ?? json?.data?.ids ?? []);
+    } catch (err) {
+      console.error("Failed to load item schedule", err);
+    }
+  };
+
+  useEffect(() => {
+    void loadItems();
+    void loadSelection();
+  }, []);
+
+  const persistSelection = async () => {
+    await fetch("/api/admin/settings/item-schedule", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ids: selectedItems }),
+    });
+  };
 
   const columns = [
     { key: "name", label: "Item" },
@@ -27,14 +66,21 @@ export default function ItemSchedulerClient() {
       <AdminPageTitle
         title="Item Scheduler"
         description="Select items to control their availability windows."
-        action={<button className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow-md">Save schedule</button>}
+        action={
+          <button
+            className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow-md"
+            onClick={persistSelection}
+          >
+            Save schedule
+          </button>
+        }
       />
 
       <div className="grid gap-6 lg:grid-cols-2">
         <AdminCard title="Choose items" description="Multi-select items for scheduling">
           <AdminTable
             columns={columns}
-            data={adminItems}
+            data={items}
             renderCell={(item, key) => {
               if (key === "active") return item.active ? <AdminBadge label="Active" tone="success" /> : <AdminBadge label="Inactive" tone="warning" />;
               if (key === "actions")
@@ -45,7 +91,9 @@ export default function ItemSchedulerClient() {
                     checked={selectedItems.includes(item.id)}
                     onChange={(e) => {
                       const checked = e.target.checked;
-                      setSelectedItems((prev) => (checked ? [...prev, item.id] : prev.filter((id) => id !== item.id)));
+                      setSelectedItems((prev) =>
+                        checked ? [...prev, item.id] : prev.filter((id) => id !== item.id),
+                      );
                     }}
                   />
                 );

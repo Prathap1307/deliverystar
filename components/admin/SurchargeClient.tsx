@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FiPlus } from "react-icons/fi";
 
 import AdminBadge from "./AdminBadge";
@@ -10,17 +10,41 @@ import AdminPageTitle from "./AdminPageTitle";
 import AdminShell from "./AdminShell";
 
 interface SurchargeRule {
-  id: number;
+  id: string;
   reason: string;
   price: string;
 }
 
-export default function SurchargeClient() {
-  const [rules, setRules] = useState<SurchargeRule[]>([
-    { id: 1, reason: "Rain", price: "1.50" },
-    { id: 2, reason: "Storm", price: "2.00" },
-  ]);
-  const [draft, setDraft] = useState<SurchargeRule>(() => ({ id: Date.now(), reason: "", price: "" }));
+interface Props {
+  initialRules: SurchargeRule[];
+}
+
+export default function SurchargeClient({ initialRules }: Props) {
+  const [rules, setRules] = useState<SurchargeRule[]>(initialRules);
+  const [draft, setDraft] = useState<SurchargeRule>(() => ({ id: crypto.randomUUID(), reason: "", price: "" }));
+
+  const loadRules = async () => {
+    try {
+      const res = await fetch("/api/admin/settings/surcharge-rules");
+      const json = await res.json();
+      setRules(json.data ?? json ?? []);
+    } catch (err) {
+      console.error("Failed to load surcharge rules", err);
+    }
+  };
+
+  useEffect(() => {
+    void loadRules();
+  }, []);
+
+  const persistRules = async (nextRules: SurchargeRule[]) => {
+    setRules(nextRules);
+    await fetch("/api/admin/settings/surcharge-rules", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(nextRules),
+    });
+  };
 
   return (
     <AdminShell>
@@ -48,8 +72,9 @@ export default function SurchargeClient() {
             <button
               className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-md"
               onClick={() => {
-                setRules((prev) => [...prev, { ...draft, id: Date.now() }]);
-                setDraft({ id: Date.now(), reason: "", price: "" });
+                const nextRules = [...rules, { ...draft, id: crypto.randomUUID() }];
+                setDraft({ id: crypto.randomUUID(), reason: "", price: "" });
+                void persistRules(nextRules);
               }}
             >
               <FiPlus /> Add surcharge
@@ -69,7 +94,11 @@ export default function SurchargeClient() {
                   <AdminBadge label="Surcharge" tone="danger" />
                   <button
                     className="rounded-lg bg-rose-50 px-3 py-1 text-xs font-semibold text-rose-700 hover:bg-rose-100"
-                    onClick={() => setRules((prev) => prev.filter((r) => r.id !== rule.id))}
+                    onClick={() =>
+                      persistRules(
+                        rules.filter((entry) => entry.id !== rule.id),
+                      )
+                    }
                   >
                     Remove
                   </button>

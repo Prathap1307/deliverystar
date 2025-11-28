@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FiPlus } from "react-icons/fi";
 
 import AdminBadge from "./AdminBadge";
@@ -10,27 +10,58 @@ import AdminPageTitle from "./AdminPageTitle";
 import AdminShell from "./AdminShell";
 
 interface Zone {
-  id: number;
+  id: string;
   name: string;
   lat: string;
   lng: string;
   radius: string;
 }
 
-export default function RadiusClient() {
-  const [zones, setZones] = useState<Zone[]>([
-    { id: 1, name: "Luton Interchange Zone", lat: "51.8787", lng: "-0.4200", radius: "5" },
-    { id: 2, name: "Town Centre", lat: "51.8900", lng: "-0.4300", radius: "3" },
-  ]);
-  const [draft, setDraft] = useState<Zone>(() => ({ id: Date.now(), name: "", lat: "", lng: "", radius: "" }));
+interface Props {
+  initialZones: Zone[];
+}
+
+export default function RadiusClient({ initialZones }: Props) {
+  const [zones, setZones] = useState<Zone[]>(initialZones);
+  const [draft, setDraft] = useState<Zone>(() => ({ id: crypto.randomUUID(), name: "", lat: "", lng: "", radius: "" }));
+
+  const loadZones = async () => {
+    try {
+      const res = await fetch("/api/admin/settings/radius-zones");
+      const json = await res.json();
+      setZones(json.data ?? json ?? []);
+    } catch (err) {
+      console.error("Failed to load radius zones", err);
+    }
+  };
+
+  useEffect(() => {
+    void loadZones();
+  }, []);
+
+  const persistZones = async (nextZones: Zone[]) => {
+    setZones(nextZones);
+    await fetch("/api/admin/settings/radius-zones", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(nextZones),
+    });
+  };
 
   return (
     <AdminShell>
-      <AdminPageTitle
-        title="Radius"
-        description="Define named delivery zones with center points."
-        action={<button className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow-md">Save zones</button>}
-      />
+        <AdminPageTitle
+          title="Radius"
+          description="Define named delivery zones with center points."
+          action={
+            <button
+              className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow-md"
+              onClick={() => persistZones(zones)}
+            >
+              Save zones
+            </button>
+          }
+        />
 
       <div className="grid gap-6 lg:grid-cols-2">
         <AdminCard title="Create zone" description="Name, center point, and radius in miles">
@@ -62,8 +93,9 @@ export default function RadiusClient() {
             <button
               className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-md"
               onClick={() => {
-                setZones((prev) => [...prev, { ...draft, id: Date.now() }]);
-                setDraft({ id: Date.now(), name: "", lat: "", lng: "", radius: "" });
+                const nextZones = [...zones, { ...draft, id: crypto.randomUUID() }];
+                setDraft({ id: crypto.randomUUID(), name: "", lat: "", lng: "", radius: "" });
+                void persistZones(nextZones);
               }}
             >
               <FiPlus /> Add zone
